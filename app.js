@@ -21,6 +21,7 @@ const app = express()
 app.use(
   cors({
     origin: process.env.NODE_ENV === 'development' ? '*' : ALLOW_ORIGIN,
+    optionsSuccessStatus: 200,
   })
 )
 
