@@ -18,9 +18,20 @@ const { ALLOW_ORIGIN } = require('./configs/corsConfig')
 
 const app = express()
 
+if (process.env.NODE_ENV === 'development') {
+  ALLOW_ORIGIN.push('*')
+}
+
 app.use(
   cors({
-    origin: process.env.NODE_ENV === 'development' ? '*' : ALLOW_ORIGIN,
+    // origin: process.env.NODE_ENV === 'development' ? '*' : ALLOW_ORIGIN,
+    origin: (origin, callback) => {
+      if (ALLOW_ORIGIN.indexOf(origin) !== -1 || !origin) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
     optionsSuccessStatus: 200,
   })
 )
