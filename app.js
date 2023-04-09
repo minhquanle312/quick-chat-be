@@ -13,14 +13,14 @@ const globalErrorHandler = require('./controllers/errorController')
 const userRouter = require('./routes/userRoutes')
 const chatRouter = require('./routes/chatRoutes')
 const messageRouter = require('./routes/messageRoutes')
+const { ALLOW_ORIGIN } = require('./configs/corsConfig')
 // const reviewRouter = require('./routes/reviewRoutes')
 
 const app = express()
 
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === 'development' ? '*' : 'https://www.google.com/',
+    origin: process.env.NODE_ENV === 'development' ? '*' : ALLOW_ORIGIN,
   })
 )
 
