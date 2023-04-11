@@ -7,6 +7,7 @@ const chatSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    avatar: String,
     isGroup: {
       type: Boolean,
       default: false,
@@ -54,14 +55,17 @@ chatSchema.pre('save', async function (next) {
 })
 
 chatSchema.pre('find', function (next) {
-  this.populate({
-    path: 'messages',
-    select: '-__v',
-    options: {
-      sort: { createdAt: -1 },
-      limit: 1,
+  this.populate([
+    {
+      path: 'messages',
+      select: '-__v',
+      options: {
+        sort: { createdAt: -1 },
+        limit: 1,
+      },
     },
-  })
+    { path: 'members', select: '-__v' },
+  ])
 
   next()
 })

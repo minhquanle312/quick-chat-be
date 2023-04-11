@@ -1,4 +1,7 @@
 const express = require('express')
+const http = require('http')
+const { Server } = require('socket.io')
+
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
 const helmet = require('helmet')
@@ -6,6 +9,7 @@ const mongoSanitize = require('express-mongo-sanitize')
 const xss = require('xss-clean')
 // const hpp = require('hpp')
 const cors = require('cors')
+const cookieParser = require('cookie-parser')
 
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controllers/errorController')
@@ -33,11 +37,33 @@ app.use(
       }
     },
     optionsSuccessStatus: 200,
+    credentials: true,
   })
 )
 
+// * Socket.io
+const server = http.createServer(app)
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+  },
+})
+
+io.on('connection', socket => {
+  socket.on('get-chat-room', chatId => {
+    // const data = ''
+    socket.join(chatId)
+    // socket.emit('load-chat-room', data)
+
+    socket.on('send-message', data => {
+      socket.broadcast.to(chatId).emit('receive-message', data)
+    })
+  })
+})
+
 // * Set security HTTP headers
 app.use(helmet())
+app.use(cookieParser())
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
@@ -52,7 +78,7 @@ const limiter = rateLimit({
 app.use('/api', limiter)
 
 // * Body parser, reading data from body into req.body
-app.use(express.json({ limit: '10kb' }))
+app.use(express.json({ limit: '10mb' }))
 
 // * Data sanitization against noSQL query injection
 app.use(mongoSanitize())
@@ -82,4 +108,4 @@ app.all('*', (req, res, next) => {
 // * all errors in catchAsync function go to globalErrorHandler
 app.use(globalErrorHandler)
 
-module.exports = app
+module.exports = { app, server }

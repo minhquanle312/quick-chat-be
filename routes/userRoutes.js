@@ -15,10 +15,12 @@ router.patch('/updateMyPassword', authController.updatePassword)
 router.get('/me', userController.getMe, userController.getUser)
 router.patch(
   '/updateMe',
-  // userController.uploadUserPhoto,
+  userController.uploadUserPhoto,
   userController.updateMe
 )
 router.delete('/deleteMe', userController.deleteMe)
+
+router.route('/:id').get(userController.getUser)
 
 router.use(authController.restrictTo('admin'))
 
@@ -28,7 +30,7 @@ router
   .post(userController.createUser)
 router
   .route('/:id')
-  .get(userController.getUser)
+  // .get(userController.getUser)
   .patch(userController.updateUser)
   .delete(userController.deleteUser)
 

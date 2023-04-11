@@ -9,7 +9,7 @@ process.on('uncaughtException', err => {
 
 dotenv.config({ path: './config.env' })
 
-const app = require('./app')
+const { app, server } = require('./app')
 
 const DB = process.env.DATABASE.replace(
   '<PASSWORD>',
@@ -21,14 +21,14 @@ mongoose.connect(DB).then(con => {
 })
 
 const port = process.env.PORT || 3000
-const server = app.listen(port, () => {
+const serverRunning = server.listen(port, () => {
   console.log(`App running on port ${port}...`)
 })
 
 process.on('uncaughtException', err => {
   console.log('UNHANDLER REJECTION 💥💥💥 Shuting down ...')
   console.log(err.name, err.message)
-  server.close(() => {
+  serverRunning.close(() => {
     process.exit(1)
   })
 })

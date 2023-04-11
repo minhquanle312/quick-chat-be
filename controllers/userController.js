@@ -3,6 +3,7 @@ const AppError = require('../utils/appError')
 const User = require('./../models/userModel')
 const catchAsync = require('./../utils/catchAsync')
 const factory = require('./handlerFactory')
+const cloudinary = require('../utils/cloudinary')
 
 // const multerStorage = multer.diskStorage({
 //   destination: (req, file, callback) => {
@@ -47,6 +48,22 @@ exports.getMe = (req, res, next) => {
   req.params.id = req.user.id
   next()
 }
+
+exports.uploadUserPhoto = catchAsync(async (req, res, next) => {
+  if (!req.body.avatar) return next()
+
+  try {
+    const result = await cloudinary.uploader.upload(req.body.avatar, {
+      folder: 'quick-chat',
+    })
+
+    req.body.avatar = result.secure_url
+  } catch (error) {
+    req.body.avatar = null
+  }
+
+  next()
+})
 
 exports.updateMe = catchAsync(async (req, res, next) => {
   // * 1. Create error if user POSTs password data
