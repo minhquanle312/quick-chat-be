@@ -1,6 +1,4 @@
 const express = require('express')
-const http = require('http')
-const { Server } = require('socket.io')
 
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
@@ -41,26 +39,6 @@ app.use(
   })
 )
 
-// * Socket.io
-const server = http.createServer(app)
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-  },
-})
-
-io.on('connection', socket => {
-  socket.on('get-chat-room', chatId => {
-    // const data = ''
-    socket.join(chatId)
-    // socket.emit('load-chat-room', data)
-
-    socket.on('send-message', data => {
-      socket.broadcast.to(chatId).emit('receive-message', data)
-    })
-  })
-})
-
 // * Set security HTTP headers
 app.use(helmet())
 app.use(cookieParser())
@@ -92,7 +70,6 @@ app.use(express.static(`${__dirname}/public`))
 // * Test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString()
-  // console.log(req.headers)
 
   next()
 })
@@ -108,4 +85,4 @@ app.all('*', (req, res, next) => {
 // * all errors in catchAsync function go to globalErrorHandler
 app.use(globalErrorHandler)
 
-module.exports = { app, server }
+module.exports = app

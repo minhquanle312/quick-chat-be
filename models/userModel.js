@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     avatar: String,
     role: {
       type: String,
-      enum: ['user', 'admin'],
+      enum: ['user', 'admin', 'demo'],
       default: 'user',
     },
     password: {
@@ -44,6 +44,12 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
+    validatedEmail: {
+      type: Boolean,
+      default: false,
+    },
+    validateEmailToken: String,
+    validateEmailExpires: Date,
     active: {
       type: Boolean,
       default: true,
@@ -121,6 +127,19 @@ userSchema.methods.createPasswordResetToken = function () {
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000
 
   // Send this token to user mail that forgot password then parse it to reset token with createHash in resetPassword api to compare with passwordResetToken in DB
+  return resetToken
+}
+
+userSchema.methods.createValidateEmailToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex')
+
+  this.validateEmailToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex')
+
+  this.validateEmailExpires = Date.now() + 24 * 60 * 60 * 1000
+
   return resetToken
 }
 

@@ -49,6 +49,29 @@ exports.getMe = (req, res, next) => {
   next()
 }
 
+exports.addNewContact = catchAsync(async (req, res, next) => {
+  if (req.user.email === req.body.userEmail) {
+    return next(new AppError('Can not add yourself to your contacts', 404))
+  }
+
+  const contactsIdList = req.user.contacts.map(contact => contact.id)
+  const contactInfo = await User.findOne({ email: req.body.userEmail })
+
+  if (!contactInfo) {
+    return next(new AppError('No user found with this email', 404))
+  }
+
+  const isInUserContact = contactsIdList.includes(contactInfo.id)
+
+  if (isInUserContact) {
+    return next(new AppError('This user is in your contacts', 404))
+  }
+
+  req.body.contacts = [...contactsIdList, contactInfo.id]
+
+  next()
+})
+
 exports.uploadUserPhoto = catchAsync(async (req, res, next) => {
   if (!req.body.avatar) return next()
 
@@ -77,7 +100,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
 
   // * 2. Update user document
-  const filteredBody = filterObj(req.body, 'name', 'email')
+  const filteredBody = filterObj(req.body, 'name', 'email', 'contacts')
   // if (req.file) filteredBody.photo = req.file.filename
 
   const updatedUser = await User.findByIdAndUpdate(req.user._id, filteredBody, {
@@ -112,6 +135,7 @@ exports.getUser = factory.getOne(User, {
   select: '-__v -passwordChangedAt -contacts -role',
   options: { maxDepth: 1 },
 })
+// exports.getUser = factory.getOne(User)
 exports.getAllUsers = factory.getAll(User)
 
 // * Do NOT update password with this

@@ -39,6 +39,10 @@ chatSchema.virtual('messages', {
   localField: '_id',
 })
 
+chatSchema.virtual('latestMessage').get(function () {
+  return this?.messages ? this?.messages[this?.messages.length - 1] : null
+})
+
 chatSchema.pre('save', async function (next) {
   const membersInNewChat = this.members
   const chatsDocument = await this.constructor.find({
@@ -68,10 +72,6 @@ chatSchema.pre('find', function (next) {
   ])
 
   next()
-})
-
-chatSchema.virtual('latestMessage').get(function () {
-  return this?.messages ? this?.messages[this?.messages.length - 1] : null
 })
 
 const Chat = mongoose.model('Chat', chatSchema)

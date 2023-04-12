@@ -7,12 +7,19 @@ const router = express.Router()
 router.post('/signup', authController.signup)
 router.post('/login', authController.login)
 router.post('/forgotPassword', authController.forgotPassword)
-router.patch('/resetPassword/:token', authController.restPassword)
+router.patch('/resetPassword/:token', authController.resetPassword)
+router.get('/validateEmail/:token', authController.validateEmail)
 
 router.use(authController.protect)
 
 router.patch('/updateMyPassword', authController.updatePassword)
 router.get('/me', userController.getMe, userController.getUser)
+router.patch(
+  '/addContact',
+  userController.getMe,
+  userController.addNewContact,
+  userController.updateMe
+)
 router.patch(
   '/updateMe',
   userController.uploadUserPhoto,
@@ -20,7 +27,7 @@ router.patch(
 )
 router.delete('/deleteMe', userController.deleteMe)
 
-router.route('/:id').get(userController.getUser)
+// router.route('/:id').get(userController.getUser)
 
 router.use(authController.restrictTo('admin'))
 
@@ -30,7 +37,7 @@ router
   .post(userController.createUser)
 router
   .route('/:id')
-  // .get(userController.getUser)
+  .get(userController.getUser)
   .patch(userController.updateUser)
   .delete(userController.deleteUser)
 
