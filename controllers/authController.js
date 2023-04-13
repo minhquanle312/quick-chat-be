@@ -61,7 +61,7 @@ exports.signup = catchAsync(async (req, res, next) => {
       {
         email: newUser.email,
         subject: 'Your validate email token (valid for 1 day)',
-        message,
+        message: '',
         html: message,
       },
       newUser.role
@@ -207,18 +207,17 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false })
 
   // * 3. Send it to user's email
-  const resetURL = `${req.protocol}://${req.get(
-    'host'
-  )}/api/v1/users/resetPassword/${resetToken}`
+  const validateEmailURL = `${req.headers.origin}/reset-password/${resetToken}`
 
-  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`
+  const message = `<p>Click <a href="${validateEmailURL}">this link</a> to reset your password</p>`
 
   try {
     await sendEmail(
       {
         email: user.email,
         subject: 'Your password reset token (valid for 10 min)',
-        message,
+        message: '',
+        html: message,
       },
       user.role
     )
